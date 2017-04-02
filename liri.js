@@ -16,6 +16,21 @@ var client = new Twitter({
 //For spotify
 var spotify = require('spotify');
 
+cla(process.argv[2], process.argv[3]);
+
+function cla(command, param) {
+    switch (command) {
+        case "my-tweets" : getTweets();
+        break;
+        case "spotify-this-song" : spotify_this_song(param);
+        break;
+        case "movie-this" : movie_this(param);
+        break;
+        case "do-what-it-says" : do_what_it_says();
+        break;
+    }
+}
+
 function getTweets(){
      client.get('statuses/user_timeline', params, function(error, tweets, response){
           if (!error) {
@@ -44,5 +59,36 @@ function spotify_this_song(song) {
      });
 }
 
+function movie_this(movie) {
+    if(movie == null) {
+        movie = "Mr Nobody";
+    }
+    request('http://www.omdbapi.com/?t=' + movie + "&tomatoes=true", function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+               var movieData = JSON.parse(body);
+               console.log("Title: " + movieData.Title);
+               console.log("Year: " + movieData.Year);
+               console.log("IMDB Rating: " + movieData.imdbRating);
+               console.log("Country: " + movieData.Country);
+               console.log("Language: " + movieData.Language);
+               console.log("Plot: " + movieData.Plot);
+               console.log("Actors: " + movieData.Actors);
+               console.log("Rotten Tomatoes Rating: " + movieData.tomatoUserRating);
+               console.log("Rotten Tomatoes URL: " + movieData.tomatoURL);
+               fs.appendFile('log.txt', "Title: " + movieData.Title + "\n" + "Year: " + movieData.Year + "\n" + "IMDB Rating: " + movieData.imdbRating + "\n" + "Country: " + movieData.Country + "\n" + "Language: " + movieData.Language + "\n" + "Plot: " + movieData.Plot + "\n" + "Actors: " + movieData.Actors + "\n" + "Rotten Tomatoes Rating: " + movieData.tomatoUserRating + "\n" + "Rotten Tomatoes URL: " + movieData.tomatoURL + "\n" + "=================================================================");
+          }
+          else {
+               console.log(error);
+          }
+     });
+}
 
-spotify_this_song(arg3);
+function do_what_it_says() {
+    fs.readFile("random.txt", "utf8", function(error, data) {
+        var parameters = data.split(",");
+        parameters[1] = parameters[1].replace(/"/g , " ").trim();
+        cla(parameters[0], parameters[1]);
+    });
+}
+
+
